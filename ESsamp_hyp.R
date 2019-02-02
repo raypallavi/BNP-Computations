@@ -47,7 +47,7 @@ Xtr=matrix(0,ntr,N+1)                   # design matrix \psi(n X N+1)
 for(j in 1:ntr){
   Xtr[j,1:(N+1)]=psi_j(xtrain[j],my_knots,int_length)
 }
-#XtrTXtr=t(Xtr)%*%Xtr
+
 
 Xte=matrix(0,nte,N+1)                   # design matrix \psi(n X N+1)
 for(j in 1:nte){
@@ -114,7 +114,7 @@ Xtr=matrix(0,ntr,N+1)                   # design matrix \phi(n X N+1)
 for(j in 1:ntr){
   Xtr[j,1:(N+1)]=phi_j(xtrain[j],my_knots,int_length)
 }
-#XtrTXtr=t(Xtr)%*%Xtr
+
 
 Xte=matrix(0,nte,N+1)                   # design matrix \phi(n X N+1)
 for(j in 1:nte){
