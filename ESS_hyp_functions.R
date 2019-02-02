@@ -2,9 +2,9 @@
 ########## Function for MCMC samples using ESS and WC algo ##########
 #####################################################################
 
-library(MASS); library(FastGP)
+library(MASS)
 
-### Function for drawing posterior samples using ESS:
+### Function for drawing posterior samples using ESS with hyperparameter updates:
 
 ########### For monotone functions estimation ##############
 mon.inc.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in,xi.in,
