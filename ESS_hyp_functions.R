@@ -19,8 +19,7 @@ mon.inc.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in
   # return.plot : logical; if true a plot of estimate with 95% CI is returned; default is TRUE
   # return.traplot : logical; if true traceplots are returned; default is TRUE
   
-  # OUTPUT: Posterior samples on xi,xi0,tau,sig and fhat with posterior mean, 95% CI of fhat
-  ptm=proc.time()
+  # OUTPUT: Posterior samples on nu,l,xi,xi0,tau,sig and fhat with posterior mean, 95% CI of fhat
   
   if(length(y)!=length(x))
     stop("y and x should be of same length!")
@@ -100,6 +99,7 @@ mon.inc.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in
     print("MCMC sample draws:")
   cnt=0
   
+  ptm=proc.time()
   for(i in 1:em){
     # sampling from \nu and \ell
     MH.out = nu.MH2(nu_in,l_in,tau,xi_in,my_knots)
@@ -109,8 +109,8 @@ mon.inc.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in
     L_inv = MH.out$L_inv
     
     # sampling Xi:
+    y_tilde = y - xi0
     if(missing(xi.fix)){
-      y_tilde = y - xi0
       nu.ess = as.vector(samp.WC(my_knots,nu_out,l_out,tau))
       xi_out = ESS(xi_in,nu.ess,y_tilde,X,sig,eta)
       xi_out = sapply(xi_out,function(z) return(max(0,z)))
@@ -152,7 +152,7 @@ mon.inc.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in
     xi_in = xi_out
     nu_in = nu_out
     l_in = l_out
-  }
+  }; tm=proc.time()-ptm
   
   if(return.traplot){
     library(mcmcplots)
@@ -169,12 +169,9 @@ mon.inc.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in
   }
   
   fmean=rowMeans(fhat_sam)
-  fsort=fhat_sam
-  for(i in 1:nrow(fhat_sam)){
-    fsort[i,]=sort(fhat_sam[i,])
-  }
-  f_low=fsort[,ef*0.025]
-  f_upp=fsort[,ef*0.975]
+  qnt=apply(fhat_sam,1,function(x) quantile(x,c(0.025,0.975),na.rm = TRUE))
+  f_low=qnt[1,]
+  f_upp=qnt[2,]
   ub=max(f_low,f_upp,fmean)
   lb=min(f_low,f_upp,fmean)
   
@@ -185,7 +182,6 @@ mon.inc.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in
     lines(x,f_upp,lwd=2,lty=2,col="blue")
   }
   
-  tm=proc.time()-ptm
   return(list("time"=tm,"rej.prop"=round(cnt/em,3),"nu_sam"=nu_sam,"ell_sam"=ell_sam,
               "xi_sam"=xi_sam,"xi0_sam"=xi0_sam,"sig_sam"=sig_sam,"tau_sam"=tau_sam,
               "fhat_sam"=fhat_sam,"fmean"=fmean,"f_low"=f_low,"f_upp"=f_upp))
@@ -205,8 +201,7 @@ mon.dec.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in
   # return.plot : logical; if true a plot of estimate with 95% CI is returned; default is TRUE
   # return.traplot : logical; if true traceplots are returned; default is TRUE
   
-  # OUTPUT: Posterior samples on xi,xi0,tau,sig and fhat with posterior mean, 95% CI of fhat
-  ptm=proc.time()
+  # OUTPUT: Posterior samples on nu,l,xi,xi0,tau,sig and fhat with posterior mean, 95% CI of fhat
   
   if(length(y)!=length(x))
     stop("y and x should be of same length!")
@@ -286,6 +281,7 @@ mon.dec.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in
     print("MCMC sample draws:")
   cnt=0
   
+  ptm=proc.time()
   for(i in 1:em){
     # sampling from \nu and \ell
     MH.out = nu.MH2(nu_in,l_in,tau,xi_in,my_knots)
@@ -295,8 +291,8 @@ mon.dec.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in
     L_inv = MH.out$L_inv
     
     # sampling Xi:
+    y_tilde = y - xi0
     if(missing(xi.fix)){
-      y_tilde = y - xi0
       nu.ess = as.vector(samp.WC(my_knots,nu_out,l_out,tau))
       xi_out = ESS.dec(xi_in,nu.ess,y_tilde,X,sig,eta)
       xi_out = sapply(xi_out,function(z) return(min(0,z)))
@@ -338,7 +334,7 @@ mon.dec.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in
     xi_in = xi_out
     nu_in = nu_out
     l_in = l_out
-  }
+  }; tm=proc.time()-ptm
   
   if(return.traplot){
     library(mcmcplots)
@@ -355,12 +351,9 @@ mon.dec.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in
   }
   
   fmean=rowMeans(fhat_sam)
-  fsort=fhat_sam
-  for(i in 1:nrow(fhat_sam)){
-    fsort[i,]=sort(fhat_sam[i,])
-  }
-  f_low=fsort[,ef*0.025]
-  f_upp=fsort[,ef*0.975]
+  qnt=apply(fhat_sam,1,function(x) quantile(x,c(0.025,0.975),na.rm = TRUE))
+  f_low=qnt[1,]
+  f_upp=qnt[2,]
   ub=max(f_low,f_upp,fmean)
   lb=min(f_low,f_upp,fmean)
   
@@ -371,7 +364,6 @@ mon.dec.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in
     lines(x,f_upp,lwd=2,lty=2,col="blue")
   }
   
-  tm=proc.time()-ptm
   return(list("time"=tm,"rej.prop"=round(cnt/em,3),"nu_sam"=nu_sam,"ell_sam"=ell_sam,
               "xi_sam"=xi_sam,"xi0_sam"=xi0_sam,"sig_sam"=sig_sam,"tau_sam"=tau_sam,
               "fhat_sam"=fhat_sam,"fmean"=fmean,"f_low"=f_low,"f_upp"=f_upp))
@@ -392,8 +384,7 @@ con.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in,xi1
   # return.plot : logical; if true a plot of estimate with 95% CI is returned; default is TRUE
   # return.traplot : logical; if true traceplots are returned; default is TRUE
   
-  # OUTPUT: Posterior samples on xi,xi0,tau,sig and fhat with posterior mean, 95% CI of fhat
-  ptm=proc.time()
+  # OUTPUT: Posterior samples on nu,l,xi,xi0,tau,sig and fhat with posterior mean, 95% CI of fhat
   
   if(length(y)!=length(x))
     stop("y and x should be of same length!")
@@ -479,6 +470,7 @@ con.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in,xi1
     print("MCMC sample draws:")
   cnt=0
   
+  ptm=proc.time()
   for(i in 1:em){
     # sampling from \nu and \ell
     MH.out = nu.MH2(nu_in,l_in,tau,xi_in,my_knots)
@@ -488,8 +480,8 @@ con.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in,xi1
     L_inv = MH.out$L_inv
     
     # sampling \Xi:
+    y_tilde = y - xi0 - xi1*x
     if(missing(xi.fix)){
-      y_tilde = y - xi0 - xi1*x
       nu.ess = as.vector(samp.WC(my_knots,nu_out,l_out,tau))
       xi_out = ESS(xi_in,nu.ess,y_tilde,X,sig,eta)
       xi_out = sapply(xi_out,function(z) return(max(0,z)))
@@ -537,7 +529,7 @@ con.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in,xi1
     xi_in = xi_out
     nu_in = nu_out
     l_in = l_out
-  }
+  }; tm=proc.time()-ptm
   
   if(return.traplot){
     library(mcmcplots)
@@ -555,12 +547,9 @@ con.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in,xi1
   }
   
   fmean=rowMeans(fhat_sam)
-  fsort=fhat_sam
-  for(i in 1:nrow(fhat_sam)){
-    fsort[i,]=sort(fhat_sam[i,])
-  }
-  f_low=fsort[,ef*0.025]
-  f_upp=fsort[,ef*0.975]
+  qnt=apply(fhat_sam,1,function(x) quantile(x,c(0.025,0.975),na.rm = TRUE))
+  f_low=qnt[1,]
+  f_upp=qnt[2,]
   ub=max(f_low,f_upp,fmean)
   lb=min(f_low,f_upp,fmean)
   
@@ -571,7 +560,6 @@ con.ESS.hyp=function(y,x,N,eta,mcmc,brn,thin,nu.in,l.in,tau.in,sig.in,xi0.in,xi1
     lines(x,f_upp,lwd=2,lty=2,col="blue")
   }
   
-  tm=proc.time()-ptm
   return(list("time"=tm,"rej.prop"=round(cnt/em,3),"nu_sam"=nu_sam,"ell_sam"=ell_sam,
               "xi_sam"=xi_sam,"xi0_sam"=xi0_sam,"xi1_sam"=xi1_sam,"sig_sam"=sig_sam,"tau_sam"=tau_sam,
               "fhat_sam"=fhat_sam,"fmean"=fmean,"f_low"=f_low,"f_upp"=f_upp))
