@@ -1,4 +1,4 @@
-# Efficient Bayesian shape-constrained function estimation
+# Efficient Bayesian shape-restricted function estimation with constrained Gaussian process priors
 
 R codes and function files for implementing the simulations and real data analysis addressed in the paper.
 
